@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Panel, Group, Separator } from 'react-resizable-panels';
 import CodeEditor from './CodeEditor';
 import ConsoleOutput from './ConsoleOutput';
@@ -37,10 +37,14 @@ export default function EditorPanel({
   const isPreview = phase === 'preview';
   const [peeking, setPeeking] = useState(false);
 
-  // Reset peek when phase or step changes
-  useEffect(() => {
-    setPeeking(false);
-  }, [phase, solutionCode]);
+  // Reset peek when phase or step changes (React-recommended derived state pattern)
+  const [trackedPhase, setTrackedPhase] = useState(phase);
+  const [trackedSolution, setTrackedSolution] = useState(solutionCode);
+  if (trackedPhase !== phase || trackedSolution !== solutionCode) {
+    setTrackedPhase(phase);
+    setTrackedSolution(solutionCode);
+    if (peeking) setPeeking(false);
+  }
 
   return (
     <div className="h-full flex flex-col bg-background">

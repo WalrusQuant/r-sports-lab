@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 interface HeaderProps {
   moduleTitle?: string;
 }
@@ -6,9 +8,9 @@ export default function Header({ moduleTitle }: HeaderProps) {
   return (
     <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
       <div className="flex items-center gap-3">
-        <a href="/" className="text-lg font-bold text-accent hover:text-accent-hover transition-colors">
+        <Link href="/" className="text-lg font-bold text-accent hover:text-accent-hover transition-colors">
           R Sports Lab
-        </a>
+        </Link>
         {moduleTitle && (
           <>
             <span className="text-foreground/20">/</span>

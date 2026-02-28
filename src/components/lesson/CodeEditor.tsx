@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useRef, useEffect } from 'react';
+import type { editor } from 'monaco-editor';
 
 const Editor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -14,7 +15,7 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ code, onChange, onRunSelection, readOnly = false, disableCopy = false }: CodeEditorProps) {
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const onRunSelectionRef = useRef(onRunSelection);
 
   // Keep ref in sync so the Monaco keybinding always calls the latest callback
@@ -23,20 +24,20 @@ export default function CodeEditor({ code, onChange, onRunSelection, readOnly = 
   }, [onRunSelection]);
 
   const handleEditorMount = useCallback(
-    (editor: any) => {
-      editorRef.current = editor;
+    (editorInstance: editor.IStandaloneCodeEditor) => {
+      editorRef.current = editorInstance;
 
       if (disableCopy) {
-        editor.addCommand(2048 | 33, () => {}); // Cmd+C
-        editor.addCommand(2048 | 52, () => {}); // Cmd+X
+        editorInstance.addCommand(2048 | 33, () => {}); // Cmd+C
+        editorInstance.addCommand(2048 | 52, () => {}); // Cmd+X
       }
 
       // Cmd+Enter: run selection or current line
-      editor.addCommand(2048 | 3, () => { // KeyMod.CtrlCmd | KeyCode.Enter
+      editorInstance.addCommand(2048 | 3, () => { // KeyMod.CtrlCmd | KeyCode.Enter
         if (!onRunSelectionRef.current) return;
-        const selection = editor.getSelection();
-        const model = editor.getModel();
-        if (!model) return;
+        const selection = editorInstance.getSelection();
+        const model = editorInstance.getModel();
+        if (!model || !selection) return;
 
         const selectedText = model.getValueInRange(selection).trim();
         if (selectedText) {

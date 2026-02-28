@@ -14,7 +14,21 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "R Sports Lab",
-  description: "Learn to build NFL sports models with R — right in your browser",
+  description: "Learn to build NFL prediction models with R — right in your browser. No installs, no setup, just code.",
+  metadataBase: new URL("https://rsportslab.com"),
+  openGraph: {
+    title: "R Sports Lab",
+    description: "Learn to build NFL prediction models with R — right in your browser.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "R Sports Lab",
+    description: "Learn to build NFL prediction models with R — right in your browser.",
+  },
+  other: {
+    "theme-color": "#0f172a",
+  },
 };
 
 export default function RootLayout({

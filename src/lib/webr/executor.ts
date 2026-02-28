@@ -1,4 +1,4 @@
-import { WebR, Shelter } from 'webr';
+import { WebR } from 'webr';
 
 export interface ExecutionResult {
   stdout: string[];

@@ -54,7 +54,7 @@ This step introduces one of the most fundamental concepts in data analysis: **wi
 
 **Long format** has one row per observation. After our reshape, \`team_games\` is long — each team-game is its own row, with a single \`points_scored\` column. This is the format that dplyr's grouping and summarizing functions are designed to work with.
 
-The rule of thumb: if you ever catch yourself writing \`mean(home_score) + mean(away_score)) / 2\` to get an average across both teams, that's a sign your data needs to be reshaped to long format first.
+The rule of thumb: if you ever catch yourself writing \`(mean(home_score) + mean(away_score)) / 2\` to get an average across both teams, that's a sign your data needs to be reshaped to long format first.
 
 ### \`select()\` with Renaming
 

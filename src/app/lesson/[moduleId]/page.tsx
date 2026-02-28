@@ -25,13 +25,13 @@ export default function LessonPage({
   params: Promise<{ moduleId: string }>;
 }) {
   const { moduleId } = use(params);
-  const module = MODULES[moduleId];
+  const lessonModule = MODULES[moduleId];
 
   const { status, error, runCode, isReady, retry } = useWebR();
-  const lesson = useLesson(module ?? module1);
+  const lesson = useLesson(lessonModule ?? module1);
   const { isRunning, result, execute, clearResult } = useCodeExecution(runCode);
 
-  if (!module) {
+  if (!lessonModule) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-error">Module not found: {moduleId}</p>
@@ -55,7 +55,16 @@ export default function LessonPage({
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      <Header moduleTitle={module.title} />
+      {/* Mobile notice */}
+      <div className="md:hidden flex flex-col items-center justify-center min-h-screen px-6 text-center">
+        <h2 className="text-xl font-bold text-foreground mb-3">Desktop Required</h2>
+        <p className="text-foreground/60 text-sm">
+          The code editor needs a larger screen. Please open this lesson on a desktop or tablet in landscape mode.
+        </p>
+      </div>
+      {/* Desktop layout */}
+      <div className="hidden md:flex md:flex-col md:h-screen">
+      <Header moduleTitle={lessonModule.title} />
       <StepNavigation
         currentStep={lesson.currentStepIndex}
         totalSteps={lesson.totalSteps}
@@ -79,6 +88,7 @@ export default function LessonPage({
           isReady={isReady}
           phase={lesson.phase}
         />
+      </div>
       </div>
     </div>
   );

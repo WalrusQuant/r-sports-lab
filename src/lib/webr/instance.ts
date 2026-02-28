@@ -1,4 +1,4 @@
-import { WebR, Shelter, ChannelType } from 'webr';
+import { WebR, ChannelType } from 'webr';
 
 export type WebRStatus = 'uninitialized' | 'loading' | 'installing-packages' | 'loading-data' | 'ready' | 'error';
 

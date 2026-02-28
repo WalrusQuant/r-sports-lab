@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { WebR } from 'webr';
 import { initWebR, getWebR, resetWebR, WebRStatus } from '@/lib/webr/instance';
 import { executeR, ExecutionResult } from '@/lib/webr/executor';
@@ -10,10 +10,7 @@ export function useWebR() {
   const [error, setError] = useState<string | null>(null);
   const webRRef = useRef<WebR | null>(null);
 
-  const startInit = useCallback(() => {
-    setError(null);
-    setStatus('uninitialized');
-
+  const doInit = useCallback(() => {
     initWebR((newStatus) => {
       setStatus(newStatus);
     })
@@ -27,13 +24,15 @@ export function useWebR() {
   }, []);
 
   useEffect(() => {
-    startInit();
-  }, [startInit]);
+    doInit();
+  }, [doInit]);
 
   const retry = useCallback(() => {
+    setError(null);
+    setStatus('uninitialized');
     resetWebR();
-    startInit();
-  }, [startInit]);
+    doInit();
+  }, [doInit]);
 
   const runCode = useCallback(
     async (code: string): Promise<ExecutionResult> => {
