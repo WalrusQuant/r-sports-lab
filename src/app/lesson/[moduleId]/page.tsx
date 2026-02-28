@@ -43,9 +43,12 @@ export default function LessonPage({
     return <LoadingScreen status={status} error={error} onRetry={retry} />;
   }
 
-  const handleRun = () => {
+  const handleRun = async () => {
     clearResult();
-    execute(lesson.currentCode, lesson.currentStep.setupCode);
+    const execResult = await execute(lesson.currentCode, lesson.currentStep.setupCode);
+    if (execResult && !execResult.error) {
+      lesson.markStepCompleted();
+    }
   };
 
   const handleRunSelection = (selectedCode: string) => {
@@ -73,7 +76,7 @@ export default function LessonPage({
         onPrev={lesson.goToPrev}
         onNext={lesson.goToNext}
         canGoPrev={lesson.canGoPrev}
-        isLast={lesson.isLastStep}
+        canGoNext={lesson.canGoNext}
       />
       <div className="flex-1 overflow-hidden">
         <LessonLayout

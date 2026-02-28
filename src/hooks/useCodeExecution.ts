@@ -10,7 +10,7 @@ export function useCodeExecution(
   const [result, setResult] = useState<ExecutionResult | null>(null);
 
   const execute = useCallback(
-    async (code: string, setupCode?: string) => {
+    async (code: string, setupCode?: string): Promise<ExecutionResult | null> => {
       setIsRunning(true);
       setResult(null);
 
@@ -19,26 +19,30 @@ export function useCodeExecution(
         if (setupCode) {
           const setupResult = await runCode(setupCode);
           if (setupResult.error) {
-            setResult({
+            const errorResult: ExecutionResult = {
               stdout: [],
               stderr: [`Setup error: ${setupResult.error}`],
               images: [],
               error: setupResult.error,
-            });
-            return;
+            };
+            setResult(errorResult);
+            return errorResult;
           }
         }
 
         // Run user code
         const execResult = await runCode(code);
         setResult(execResult);
+        return execResult;
       } catch (err) {
-        setResult({
+        const errorResult: ExecutionResult = {
           stdout: [],
           stderr: [],
           images: [],
           error: err instanceof Error ? err.message : String(err),
-        });
+        };
+        setResult(errorResult);
+        return errorResult;
       } finally {
         setIsRunning(false);
       }

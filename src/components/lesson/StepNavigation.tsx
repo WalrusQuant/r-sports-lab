@@ -10,7 +10,7 @@ interface StepNavigationProps {
   onPrev: () => void;
   onNext: () => void;
   canGoPrev: boolean;
-  isLast: boolean;
+  canGoNext: boolean;
 }
 
 export default function StepNavigation({
@@ -21,7 +21,7 @@ export default function StepNavigation({
   onPrev,
   onNext,
   canGoPrev,
-  isLast,
+  canGoNext,
 }: StepNavigationProps) {
   return (
     <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-surface">
@@ -64,7 +64,7 @@ export default function StepNavigation({
         </button>
         <button
           onClick={onNext}
-          disabled={isLast || phase === 'preview'}
+          disabled={!canGoNext}
           className="px-3 py-1 text-sm rounded bg-accent hover:bg-accent-hover text-background font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         >
           Next

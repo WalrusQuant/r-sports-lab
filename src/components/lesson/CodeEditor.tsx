@@ -6,6 +6,30 @@ import type { editor } from 'monaco-editor';
 
 const Editor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
+function configureRLanguage(monaco: typeof import('monaco-editor')) {
+  monaco.languages.setLanguageConfiguration('r', {
+    onEnterRules: [
+      // Auto-indent after lines ending with %>%, |>, +, or open parens/braces
+      {
+        beforeText: /(%>%|%\|%|\|>|\+|,|\(|\{)\s*$/,
+        action: { indentAction: monaco.languages.IndentAction.Indent },
+      },
+    ],
+    brackets: [
+      ['(', ')'],
+      ['[', ']'],
+      ['{', '}'],
+    ],
+    autoClosingPairs: [
+      { open: '(', close: ')' },
+      { open: '[', close: ']' },
+      { open: '{', close: '}' },
+      { open: '"', close: '"' },
+      { open: "'", close: "'" },
+    ],
+  });
+}
+
 interface CodeEditorProps {
   code: string;
   onChange: (value: string) => void;
@@ -65,6 +89,7 @@ export default function CodeEditor({ code, onChange, onRunSelection, readOnly = 
         value={code}
         onChange={(value) => onChange(value ?? '')}
         theme="vs-dark"
+        beforeMount={configureRLanguage}
         onMount={handleEditorMount}
         options={{
           minimap: { enabled: false },
