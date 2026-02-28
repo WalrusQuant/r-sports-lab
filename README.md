@@ -12,6 +12,11 @@ R Sports Lab is an interactive learning platform that teaches sports modeling th
 | 2 | **Bradley-Terry Ratings** | Fit a Bradley-Terry model to estimate team strength from win/loss outcomes, then evaluate with a train/test split | 6 |
 | 3 | **Hybrid Models & Forecasting** | Combine Bradley-Terry ratings with strength metrics to predict spreads, win probabilities, and forecast a full week | 6 |
 
+## Prerequisites
+
+- **Node.js 18+** — required to run the dev server ([download](https://nodejs.org/))
+- **R** (optional) — only needed to regenerate the NFL dataset via `Rscript scripts/prepare-data.R`. Not required to run the app — all R code executes in the browser via WebR.
+
 ## Getting Started
 
 ```bash
