@@ -137,7 +137,7 @@ if (!exists("games_clean")) {
     case_when(team == "STL" ~ "LA", team == "SD" ~ "LAC", team == "OAK" ~ "LV", TRUE ~ team)
   }
   games_clean <- games %>%
-    filter(game_type == "REG", season >= 2015) %>%
+    filter(game_type == "REG", season >= 2015, !(season == 2025 & week == 18)) %>%
     select(season, week, home_team, away_team, home_score, away_score) %>%
     mutate(home_team = standardize_team(home_team), away_team = standardize_team(away_team))
 }

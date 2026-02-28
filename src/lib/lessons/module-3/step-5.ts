@@ -7,10 +7,12 @@ const step5: LessonStep = {
   previewInstructions: `
 ## What Are We Building?
 
-Now we put the forecast functions to work on a real NFL schedule. We'll predict every game from **Week 1 of the 2025 season** — generating a spread prediction, win probability, and American odds for each matchup.
+Now we put the forecast functions to work on real games the model has **never seen**. We held out **Week 18 of the 2025 season** from training — the model was built on everything else. Now we'll predict every game from that week, generating a spread prediction, win probability, and American odds for each matchup.
+
+This is a genuine **out-of-sample test**. The model has no knowledge of these game outcomes, so the predictions reflect what we'd actually generate before kickoff.
 
 The workflow is:
-1. Pull the Week 1, 2025 schedule from \`games_clean\`
+1. Use the \`week18_games\` holdout data (already set up for you)
 2. Use \`mapply()\` to call \`bt_spread_forecast()\` and \`hybrid_prob()\` for every game
 3. Convert probabilities to **American odds** — the format used by sportsbooks
 
@@ -24,15 +26,13 @@ Underdog: +((1-p) / p) * 100
 The final output is a printable forecast table — the kind of thing you'd see on a sports analytics blog or betting show. Each row shows the matchup, predicted spread, home win probability, and American odds for both sides.
 `,
 
-  solutionCode: `# Get Week 1, 2025 schedule
-week1_2025 <- games_clean %>% filter(season == 2025, week == 1)
-
+  solutionCode: `# week18_games is already loaded — these are the holdout games
 # Predict spreads and win probabilities for each game
 forecasts <- data.frame(
-  home = week1_2025$home_team,
-  away = week1_2025$away_team,
-  spread = round(mapply(bt_spread_forecast, week1_2025$home_team, week1_2025$away_team), 1),
-  home_prob = round(mapply(hybrid_prob, week1_2025$home_team, week1_2025$away_team) * 100, 1)
+  home = week18_games$home_team,
+  away = week18_games$away_team,
+  spread = round(mapply(bt_spread_forecast, week18_games$home_team, week18_games$away_team), 1),
+  home_prob = round(mapply(hybrid_prob, week18_games$home_team, week18_games$away_team) * 100, 1)
 )
 
 # Convert probability to American odds
@@ -47,8 +47,8 @@ prob_to_odds <- function(p) {
 forecasts$home_odds <- prob_to_odds(forecasts$home_prob)
 forecasts$away_odds <- prob_to_odds(100 - forecasts$home_prob)
 
-cat("Week 1, 2025 Forecasts\\n")
-cat("======================\\n\\n")
+cat("Week 18, 2025 Forecasts\\n")
+cat("=======================\\n\\n")
 print(forecasts, row.names = FALSE)`,
 
   practiceInstructions: `
@@ -67,7 +67,7 @@ For our forecast functions:
 
 \`\`\`r
 # Predict the spread for every game in one call
-mapply(bt_spread_forecast, schedule$home_team, schedule$away_team)
+mapply(bt_spread_forecast, week18_games$home_team, week18_games$away_team)
 \`\`\`
 
 This is much cleaner than writing a for loop. \`mapply()\` returns a vector of results — one per game — which you can store directly in a data frame column.
@@ -125,17 +125,14 @@ Each argument to \`data.frame()\` becomes a column. The vectors must all be the 
 
 ---
 
-Now generate the full Week 1 forecast yourself.
+Now generate the full Week 18 forecast yourself.
 `,
 
-  scaffoldCode: `# Get the Week 1, 2025 schedule from games_clean
-# Hint: data %>% filter(season == 2025, week == 1)
-
-
+  scaffoldCode: `# week18_games is already loaded — the holdout games our model hasn't seen
 # Build a forecasts data frame with: home, away, spread, home_prob
 # Hint: mapply(function_name, vector1, vector2) applies function to paired elements
-# Spread: round(mapply(bt_spread_forecast, home_teams, away_teams), 1)
-# Prob: round(mapply(hybrid_prob, home_teams, away_teams) * 100, 1)
+# Spread: round(mapply(bt_spread_forecast, week18_games$home_team, ...), 1)
+# Prob: round(mapply(hybrid_prob, week18_games$home_team, ...) * 100, 1)
 
 
 # Define prob_to_odds function to convert percentage to American odds
@@ -149,8 +146,8 @@ Now generate the full Week 1 forecast yourself.
 
 
 # Print the forecast table
-cat("Week 1, 2025 Forecasts\\n")
-cat("======================\\n\\n")
+cat("Week 18, 2025 Forecasts\\n")
+cat("=======================\\n\\n")
 print(forecasts, row.names = FALSE)`,
 
   setupCode: `suppressPackageStartupMessages({
@@ -165,7 +162,7 @@ if (!exists("games_clean")) {
     case_when(team == "STL" ~ "LA", team == "SD" ~ "LAC", team == "OAK" ~ "LV", TRUE ~ team)
   }
   games_clean <- games %>%
-    filter(game_type == "REG", season >= 2015) %>%
+    filter(game_type == "REG", season >= 2015, !(season == 2025 & week == 18)) %>%
     select(season, week, home_team, away_team, home_score, away_score) %>%
     mutate(home_team = standardize_team(home_team), away_team = standardize_team(away_team))
 }
@@ -253,6 +250,15 @@ if (!exists("hybrid_prob")) {
     )
     as.numeric(predict(win_model, newdata = newdata, type = "response"))
   }
+}
+if (!exists("week18_games")) {
+  standardize_team <- function(team) {
+    case_when(team == "STL" ~ "LA", team == "SD" ~ "LAC", team == "OAK" ~ "LV", TRUE ~ team)
+  }
+  week18_games <- games %>%
+    filter(game_type == "REG", season == 2025, week == 18) %>%
+    select(season, week, home_team, away_team, home_score, away_score) %>%
+    mutate(home_team = standardize_team(home_team), away_team = standardize_team(away_team))
 }`,
 };
 

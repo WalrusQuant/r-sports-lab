@@ -7,7 +7,7 @@ const step6: LessonStep = {
   previewInstructions: `
 ## What Are We Building?
 
-This is the payoff step. We take our Week 1 2025 predictions and compare them against what actually happened on the field. Did the model pick the right winners? How close were the predicted spreads to the actual margins?
+This is the payoff step. We take our Week 18 predictions — generated from a model that **never saw these games** — and compare them against what actually happened on the field. This is a genuine out-of-sample evaluation.
 
 We compute two evaluation metrics:
 
@@ -22,9 +22,8 @@ This is a common format in sports analytics reporting — it gives readers an in
 
   solutionCode: `suppressPackageStartupMessages(library(ggplot2))
 
-# Get actual results for Week 1, 2025
-week1_actual <- games_clean %>%
-  filter(season == 2025, week == 1) %>%
+# week18_games has the actual scores for our holdout week
+week18_actual <- week18_games %>%
   mutate(
     actual_mov = home_score - away_score,
     actual_win = as.integer(actual_mov > 0)
@@ -32,11 +31,11 @@ week1_actual <- games_clean %>%
 
 # Build evaluation table
 eval_data <- data.frame(
-  matchup = paste(week1_actual$away_team, "@", week1_actual$home_team),
-  pred_spread = round(mapply(bt_spread_forecast, week1_actual$home_team, week1_actual$away_team), 1),
-  actual_spread = week1_actual$actual_mov,
-  pred_win = as.numeric(mapply(hybrid_prob, week1_actual$home_team, week1_actual$away_team)),
-  actual_win = week1_actual$actual_win
+  matchup = paste(week18_actual$away_team, "@", week18_actual$home_team),
+  pred_spread = round(mapply(bt_spread_forecast, week18_actual$home_team, week18_actual$away_team), 1),
+  actual_spread = week18_actual$actual_mov,
+  pred_win = as.numeric(mapply(hybrid_prob, week18_actual$home_team, week18_actual$away_team)),
+  actual_win = week18_actual$actual_win
 )
 
 # Accuracy and MAE
@@ -44,7 +43,7 @@ eval_data$correct <- as.integer((eval_data$pred_win > 0.5) == (eval_data$actual_
 accuracy <- mean(eval_data$correct)
 mae <- mean(abs(eval_data$pred_spread - eval_data$actual_spread))
 
-cat("Week 1 2025 Results:\\n")
+cat("Week 18, 2025 Results (Out-of-Sample):\\n")
 cat("Pick accuracy:", round(accuracy * 100, 1), "%\\n")
 cat("Spread MAE:", round(mae, 1), "points\\n\\n")
 
@@ -60,7 +59,7 @@ ggplot(plot_data, aes(x = matchup, y = spread, fill = type)) +
   coord_flip() +
   scale_fill_manual(values = c("Predicted" = "#38bdf8", "Actual" = "#f87171")) +
   labs(
-    title = "Week 1 2025: Predicted vs Actual Spread",
+    title = "Week 18, 2025: Predicted vs Actual Spread",
     x = NULL,
     y = "Home Margin of Victory",
     fill = NULL
@@ -77,12 +76,12 @@ ggplot(plot_data, aes(x = matchup, y = spread, fill = type)) +
 ### Comparing Predictions to Actuals
 
 The evaluation workflow follows a standard pattern:
-1. Generate predictions for a known set of games
+1. Generate predictions for a set of held-out games
 2. Retrieve the actual outcomes
 3. Compute error metrics
 4. Visualize the comparison
 
-The key is that the actual outcomes come from \`games_clean\`, which has the real scores. We already used these games for training (since our model was fit on all 2015-2025 data), so this isn't a true out-of-sample test — but it demonstrates the evaluation workflow you'd use with genuinely held-out data.
+The key is that \`week18_games\` was excluded from training — the model never saw these outcomes. This makes it a genuine out-of-sample evaluation, the gold standard for measuring model performance.
 
 ### Accuracy from Probabilities
 
@@ -158,9 +157,8 @@ Now evaluate the model and build the comparison chart yourself.
 # Hint: suppressPackageStartupMessages(library(ggplot2))
 
 
-# Get actual Week 1, 2025 results from games_clean
-# Add actual_mov (home_score - away_score) and actual_win columns
-# Hint: data %>% filter(...) %>% mutate(actual_mov = ..., actual_win = as.integer(... > 0))
+# week18_games has the holdout scores — add actual_mov and actual_win columns
+# Hint: data %>% mutate(actual_mov = home_score - away_score, actual_win = as.integer(... > 0))
 
 
 # Build evaluation table with: matchup, pred_spread, actual_spread, pred_win, actual_win
@@ -173,7 +171,7 @@ Now evaluate the model and build the comparison chart yourself.
 
 
 # Print results
-cat("Week 1 2025 Results:\\n")
+cat("Week 18, 2025 Results (Out-of-Sample):\\n")
 cat("Pick accuracy:", round(accuracy * 100, 1), "%\\n")
 cat("Spread MAE:", round(mae, 1), "points\\n\\n")
 
@@ -195,7 +193,7 @@ if (!exists("games_clean")) {
     case_when(team == "STL" ~ "LA", team == "SD" ~ "LAC", team == "OAK" ~ "LV", TRUE ~ team)
   }
   games_clean <- games %>%
-    filter(game_type == "REG", season >= 2015) %>%
+    filter(game_type == "REG", season >= 2015, !(season == 2025 & week == 18)) %>%
     select(season, week, home_team, away_team, home_score, away_score) %>%
     mutate(home_team = standardize_team(home_team), away_team = standardize_team(away_team))
 }
@@ -283,6 +281,15 @@ if (!exists("hybrid_prob")) {
     )
     as.numeric(predict(win_model, newdata = newdata, type = "response"))
   }
+}
+if (!exists("week18_games")) {
+  standardize_team <- function(team) {
+    case_when(team == "STL" ~ "LA", team == "SD" ~ "LAC", team == "OAK" ~ "LV", TRUE ~ team)
+  }
+  week18_games <- games %>%
+    filter(game_type == "REG", season == 2025, week == 18) %>%
+    select(season, week, home_team, away_team, home_score, away_score) %>%
+    mutate(home_team = standardize_team(home_team), away_team = standardize_team(away_team))
 }`,
 };
 
