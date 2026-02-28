@@ -9,7 +9,13 @@ const Editor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 function configureRLanguage(monaco: typeof import('monaco-editor')) {
   monaco.languages.setLanguageConfiguration('r', {
     onEnterRules: [
-      // Auto-indent after lines ending with %>%, |>, +, or open parens/braces
+      // Already-indented pipe continuation: maintain indent, don't increase
+      {
+        beforeText: /(%>%|%\|%|\|>)\s*$/,
+        previousLineText: /(%>%|%\|%|\|>)\s*$/,
+        action: { indentAction: monaco.languages.IndentAction.None },
+      },
+      // First pipe or trailing +, comma, open paren/brace: indent
       {
         beforeText: /(%>%|%\|%|\|>|\+|,|\(|\{)\s*$/,
         action: { indentAction: monaco.languages.IndentAction.Indent },
